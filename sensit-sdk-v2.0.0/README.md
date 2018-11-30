@@ -1,111 +1,160 @@
-# Sens'it SDK
+# Lab Sens'it
 
-The Sens'it is a multi-sensor device that uses the Sigfox Network to communicate.  
-It embeds a button, two LEDs, a temperature & relative humidity sensor, an ambient light sensor, an accelerometer, a magnetometer and a reed switch.
+## Prerequesite
 
-The Sens'it SDK makes it possible for you to change the behavior of the device to match your needs.
+1. Locally on your computer: 
 
-## Getting Started
+Execute: `git clone https://github.com/IoTClassroom/hei-2018-2019-lab-sens-it-d-halluin-de-belleroche`
 
-### Download the SDK
-
-Go to [Sigfox Build](https://build.sigfox.com/sensit-for-developers) to download the SDK, which contains the SDK library.
-
-### Software Installation
-
-To use the SDK, please install the following software:
-
-- [GNU Arm Embedded Toolchain version 7.2.1](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads)
-
-- [dfu-util 0.9](http://dfu-util.sourceforge.net/)
-
-### Sens'it Upgrade
-
-**If you use a Sens'it 2, follow the steps below to upgrade your device and make it compatible with the SDK.**
-
-1. Set your Sens'it on Standby mode (main LED off & secondary LED on).
-2. Connect it to your computer.
-3. Do 4 short presses on the button.
-4. When the secondary LED starts blinking, do a long press on the button.
-5. If both LEDs become white, your device is in bootloader; otherwise go back to step 3.
-6. Program your Sens'it with the firmware `upgrade.bin` using the following command:
+2. In your repository, insert in file `README.md`:
 ```
-dfu-util -a 0 -s 0x08000000:leave -D bin/upgrade.bin
+My Sens'it ID: B436BA
 ```
-7. If the main LED is:
-    - **BLUE**, your device was already compatible with the SDK.
-    - **GREEN**, your device is now compatible with the SDK.
-    - **YELLOW**, the upgrade has failed.
-    - **RED**, your device cannot be upgraded.
+3. Commit and push your work!
 
-## Develop your firmware
+---
+---
 
-Many functions are available to help you develop your custom application:
- - [Sens'it APIs](sdk/inc/sensit/sensit_api.h)
- - [Sigfox Radio](sdk/inc/radio/radio_api.h)
- - [Temperature sensor](sdk/inc/sensors/hts221.h)
- - [Ambient light sensor](sdk/inc/sensors/ltr329.h)
- - [Accelerometer](sdk/inc/sensors/fxos8700.h)
+# PART 1 - Hands on the Sens'it SDK
 
-The full API documentation is available [here](doc/html/modules.html).  
-You can also consult the [F.A.Q.](doc/FAQ.md) section, and the list of [reserved prefix](doc/reserved-prefix.md) that you should not use for your functions.
+## Sigfox Cloud
 
-To start your development, use the [main](sdk/src/main.c) template.
+1.  Head over to the [activate](https://buy.sigfox.com/activate).
 
-### Sample codes
+2. Select your country, enter the device ID & PAC and finish creating your account.
 
-Here is the list of available sample code that may help you:
+3. Once done, log on the [backend](https://backend.sigfox.com/).
 
-| Use case                                    | Doc                        |
-|---------------------------------------------|----------------------------|
-| Temperature & relative humidity measurement | [here](doc/temperature.md) |
-| Ambient light measurement                   | [here](doc/light.md)       |
-| Movement detection                          | [here](doc/vibration.md)   |
-| Magnet detection                            | [here](doc/magnet.md)      |
-| AT commands parser                          | [here](doc/modem.md)       |
+4. Try sending a message by double pressing the button.
 
-## How to Build
+5. Click on your device ID and select the **"Messages"** tab. You should now see a Sigfox message.
 
-A Makefile is provided to ease the building of all sources.  
-You can edit the following fields to match your need:
- - **OUTPUT_NAME**: to change the name of the firmware binary.
- - **CC_INC**: to add new headers directories.
- - **VPATH**: to add new sources directories.
- - **OBJ_LIST**: to add new object targets to build.
- - **CC_FLAGS**: to add some compilation flags.
+6. Clone this repository.
 
-By default, the firmware will use the Radio Configuration (RC) set in your device.  
-If you need another RC, use one of these flags: `-DUSE_RC1`, `-DUSE_RC2`, `-DUSE_RC3`, or `-DUSE_RC4`.
+## Sens'it development environment
 
-Then, use the command `make` to build your firmware.
+### Linux / Mac OS
 
-The size of a Sens'it firmware can be up to 29 kB.  
-**Do not modify the Linker Script to increase the firmware size, otherwise you may erase critical data from the device.**
+1. Download and install [GNU Arm Embedded Toolchain version 7.2.1](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads).
+
+3. Execute: `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
+
+4. Execute: `brew install dfu-util`
+
+5. Edit: `./sensit-sdk-v2.0.0/sdk/Makefile`:
+
+    - Make sure your `CC`, `BIN_TOOL`, `SIZE_TOOL` paths links to the right folder.
+    - Example:
+        ```
+        CC = /Users/<YOUR_PATH>/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-gcc
+        BIN_TOOL  = /Users/<YOUR_PATH>/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-objcopy
+        SIZE_TOOL = /Users/<YOUR_PATH>/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-size
+        ```
+
+6. In `./sensit-sdk-v2.0.0/sdk/`, execute: `make temperature`
+
+### Windows
+
+1. Download and install [GNU Arm Embedded Toolchain version 7.2.1](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads). **/!\ Make sure to tick the `Add environment path variables` at the end of installation.**
+
+2. Download and unzip [dfu-util-0.9-win64.zip](http://dfu-util.sourceforge.net/releases/).
+
+3. Download [Make for Windows](http://gnuwin32.sourceforge.net/downlinks/make.php).
+
+4. Download [Zadig](https://zadig.akeo.ie/), you can install the STM32 driver once the device is in **bootloader mode** (_cf. 'Program your Sens'it'_ steps 1. to 4.).
+
+5. Edit: `./sensit-sdk-v2.0.0/sdk/Makefile`:
+
+    - Set `LIB_PATH`, `BIN_PATH`, `OBJ_PATH` paths links to the right folder.
+    - Example:
+        ```
+        LIB_PATH = C:/Users/<YOUR_PATH>/sensit-sdk-v2.0.0/sdk/lib
+        BIN_PATH = C:/Users/<YOUR_PATH>/sensit-sdk-v2.0.0/sdk/bin
+        OBJ_PATH = C:/Users/<YOUR_PATH>/sensit-sdk-v2.0.0/sdk/obj
+        ```
+
+6. In `./sensit-sdk-v2.0.0/sdk/` (where the `Makefile` is), execute: `"C:/Users/<YOUR_PATH>/GnuWin32/bin/make.exe" temperature`
+
+Now check on the Sigfox Backend if you received some messages.
 
 ## Program your Sens'it
 
 To program your Sens'it you will need to put it in bootloader:
+
 1. Connect your device to your computer.
 2. Reset your device. With one of the provided firmwares you can do this with 4 short presses on the button.
 3. When the secondary LED starts blinking, do a long press on the button.
-4. If both LEDs become white, your device is in bootloader.
+4. If both LEDs become white, your device is in **bootloader mode**.
+5. Now you can flash:
+    - `LINUX/MACOS`: Use the `make prog` command to program your Sens'it.
+    - `WINDOWS`: Use the `"C:/Users/<YOUR_PATH>/dfu-util.exe" -a 0 -s 0x08000000:leave -D bin/sensit.bin` command to program your Sens'it.
 
-Then, use the `make prog` command to program your Sens'it.
+**Hourray, you just flashed the** `main_TEMPERATURE.c` **firmware.**
 
-If you want to return to the original firmware of the Sens'it 3, use the following command to program it:
+Now check on the Sigfox Backend if you received some messages.
+
+## Visualize and decode your messages
+
+1. Head over to the [Sigfox Platform](https://workshop.iotagency.sigfox.com/).
+2. Create an account or sign in.
+3. Go to the `API` section and keep it open.
+4. On the [Sigfox Backend](https://backend.sigfox.com/devicetype/list):
+    - Click on your device type **name**.
+    - Go to the `CALLBACKS` section.
+    - Create a two new callbacks:
+        * From step 3. copy and paste the **BIDIR** and **GEOLOC** information.
+    - Send a Sigfox message.
+
+Your Sens'it messages must now be appearing on the platform and you should also have the Sigfox geolocation working.
+
+---
+---
+
+# PART 2 - Implementing a use case
+
+## Use case
+
+1. Think of a use case with your group.
+    - Fill in the blanks [here](https://goo.gl/remJnJ).
+    - Describe briefly your use-case idea _(try to keep it business focused if you can)_.
+
+## Implementation
+
+1. Make sure your Sens’it is activated and messages are received on the Sigfox Backend.
+
+2. Use the Sens’it SDK docs.
+    - Open index.html in the `./sensit-sdk-v2.0.0/doc/html/` folder.
+    
+### Program your Sens'it
+
+Implement a new firmware in the `main.c` file (located in `./sensit-sdk-v2.0.0/sdk/src/`).
+
+- To compile use `make all`. This command will also let you verify your code.
+- To flash your Sens'it you will need to put it in bootloader:
+    1. Connect your device to your computer.
+    2. Reset your device. With one of the provided firmwares you can do this with 4 short presses on the button.
+    3. When the secondary LED starts blinking, do a long press on the button.
+    4. If both LEDs become white, your device is in bootloader.
+    5. Then, use the `make prog` command to program your Sens'it.
+
+## Visualize and decode your messages
+
+1. Head over to https://workshop.iotagency.sigfox.com.
+2. Create a parser _(use your name as parser name)_ to decode your payloads.
+3. Build a dashboard.
+
+## Pitch
+
+1. Download & fill the pitch slides [here](https://goo.gl/E6et8W)
+2. Pitch your use case! **(2-3min talk max)**
+
+---
+---
+
+# Hint
+
+If you want to return to the **original firmware** of the Sens'it 3, use the following command to program it:
 ```
 dfu-util -a 0 -s 0x08000000:leave -D bin/sensit_discovery_vX.X.X.bin
 ```
 Replace `X.X.X` with the current version of the Discovery firmware available in the `bin` folder.
-
-## Version
-
-- v2.0.0
-
-## Authors
-
-- Sens'it Team
-
-## Copyright
-
-- Copyright (c) 2018 Sigfox, All Rights Reserved.
